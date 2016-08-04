@@ -34,11 +34,14 @@
 #include "testPWM.h"
 #include "pin_macros.h"
 
-
+volatile struct
+{
+	unsigned tmr1ovf	: 1;
+	} IsrFlag;
 
 ISR (TIMER1_OVF_vect)
 {
-	
+	IsrFlag.tmr1ovf = 1;
 }
 
 void initial_periphery(void)
@@ -64,8 +67,24 @@ void initial_periphery(void)
 
 int main(void)
 {
+	
+	initial_periphery();
+	sei();
+	
     while(1)
     {
-        //TODO:: Please write your application code 
+        if (IsrFlag.tmr1ovf)
+        {
+			static uint16_t DutyCycle1A = 0, DutyCycle1B = UINT16_MAX;
+			
+			cli();
+			IsrFlag.tmr1ovf = 0;
+			sei();
+			DutyCycle1A += 1024U;
+			DutyCycle1B -= 1024U;
+			OCR1A = DutyCycle1A;
+			OCR1B = DutyCycle1B;
+			TOGGLE(PinLed);
+        }
     }
 }
