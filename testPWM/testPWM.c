@@ -58,9 +58,9 @@ void initial_periphery(void)
 	TCCR1A = (1 << WGM11) | (1 << COM1A1) | (1 << COM1B1); // non-inverting mode; mode = 14 (Fast PWM)
 	TCCR1C = 0;
 	TCNT1 = 0;
-	ICR1 = 30000U;
-	OCR1A = 0;
-	OCR1B = UINT16_MAX;
+	ICR1 = PWM_PERIOD;
+	OCR1A = PWM_MIN;
+	OCR1B = PWM_MAX;
 	TIMSK1 = (1 << TOIE1);
 	TCCR1B = (1 << CS11) | (1 << WGM13) | (1 << WGM12); // start with clk/8; mode = 14 (Fast PWM)
 }
@@ -75,13 +75,45 @@ int main(void)
     {
         if (IsrFlag.tmr1ovf)
         {
-			static uint16_t DutyCycle1A = 0, DutyCycle1B = UINT16_MAX;
+			static uint16_t DutyCycle1A = PWM_MIN, DutyCycle1B = PWM_MAX;
+			static uint8_t Sigma = 0, Revers;
 			
 			cli();
 			IsrFlag.tmr1ovf = 0;
 			sei();
-			DutyCycle1A += 1024U;
-			DutyCycle1B -= 1024U;
+			if (Revers)
+			{
+				DutyCycle1A -= Sigma;
+				DutyCycle1B += Sigma;
+				if ((DutyCycle1A < PWM_MIN) || (DutyCycle1B > PWM_MAX))
+				{
+					DutyCycle1A = PWM_MIN;
+					DutyCycle1B = PWM_MAX;
+					Sigma = 0;
+					Revers = 0;
+				}
+				else
+				{
+					Sigma++;
+				}
+			} 
+			else
+			{
+				DutyCycle1A += Sigma;
+				DutyCycle1B -= Sigma;
+				if ((DutyCycle1A > PWM_MAX) || (DutyCycle1B < PWM_MIN))
+				{
+					DutyCycle1A = PWM_MAX;
+					DutyCycle1B = PWM_MIN;
+					Sigma = 0;
+					Revers = 1;
+				}
+				else
+				{
+					Sigma++;
+				}
+			}
+			
 			OCR1A = DutyCycle1A;
 			OCR1B = DutyCycle1B;
 			TOGGLE(PinLed);
