@@ -58,7 +58,7 @@ void initial_periphery(void)
 	TCCR1A = (1 << WGM11) | (1 << COM1A1) | (1 << COM1B1); // non-inverting mode; mode = 14 (Fast PWM)
 	TCCR1C = 0;
 	TCNT1 = 0;
-	ICR1 = UINT16_MAX;
+	ICR1 = 30000U;
 	OCR1A = 0;
 	OCR1B = UINT16_MAX;
 	TIMSK1 = (1 << TOIE1);
