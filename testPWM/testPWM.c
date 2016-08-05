@@ -85,6 +85,7 @@ int main(void)
 			{
 				DutyCycle1A -= Sigma;
 				DutyCycle1B += Sigma;
+				Sigma++;
 				if ((DutyCycle1A < PWM_MIN) || (DutyCycle1B > PWM_MAX))
 				{
 					DutyCycle1A = PWM_MIN;
@@ -92,25 +93,18 @@ int main(void)
 					Sigma = 0;
 					Revers = 0;
 				}
-				else
-				{
-					Sigma++;
-				}
 			} 
 			else
 			{
 				DutyCycle1A += Sigma;
 				DutyCycle1B -= Sigma;
+				Sigma++;
 				if ((DutyCycle1A > PWM_MAX) || (DutyCycle1B < PWM_MIN))
 				{
 					DutyCycle1A = PWM_MAX;
 					DutyCycle1B = PWM_MIN;
 					Sigma = 0;
 					Revers = 1;
-				}
-				else
-				{
-					Sigma++;
 				}
 			}
 			
